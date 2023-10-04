@@ -6,9 +6,9 @@ export const createLink = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
-  const { name, url }: Link = req.body;
+  const { name, url, user }: Link = req.body;
   try {
-    if (!name || !url) {
+    if (!name || !url || !user) {
       return failureResponse({
         res,
         status: 400,
@@ -18,12 +18,50 @@ export const createLink = async (
     const newLink = new LinkModel(req.body);
     const savedNewLink = await newLink.save();
 
-    return successResponse({ res, data: { link: savedNewLink } });
+    return successResponse({ res, status: 201, data: { link: savedNewLink } });
   } catch (error) {
     return failureResponse({ res });
   }
 };
 
+export const updateLink = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const { id } = req.params;
+  try {
+    const isFoundLink = await LinkModel.findById(id);
+    if (!isFoundLink) {
+      return failureResponse({ res, status: 404, message: "LINK_NOT_FOUND" });
+    }
+    const updatedLink = await LinkModel.findByIdAndUpdate(
+      { _id: id },
+      req.body,
+      { new: true }
+    );
+
+    return successResponse({ res, data: { link: updatedLink } });
+  } catch (error) {
+    return failureResponse({ res });
+  }
+};
+export const deleteLink = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const { id } = req.params;
+  try {
+    const isFoundLink = await LinkModel.findById(id);
+    if (!isFoundLink) {
+      return failureResponse({ res, status: 404, message: "LINK_NOT_FOUND" });
+    }
+    await LinkModel.findByIdAndDelete(id);
+
+    return successResponse({ res, message: "LINK_DELETED_SUCCESFULLY" });
+  } catch (error) {
+    return failureResponse({ res });
+  }
+};
 export const getAllLinksByUsername = async (
   req: Request,
   res: Response
@@ -31,7 +69,6 @@ export const getAllLinksByUsername = async (
   const { username } = req.params;
   try {
     const isFoundUser = await UserModel.findOne({ username });
-    console.log(username);
     if (!isFoundUser) {
       return failureResponse({
         res,
@@ -39,7 +76,29 @@ export const getAllLinksByUsername = async (
         message: "USER_NOT_FOUNT",
       });
     }
-    const links = await LinkModel.findById(isFoundUser._id) || [];
+    const links = (await LinkModel.find({ user: isFoundUser._id })) || [];
+    console.log(links);
+    return successResponse({ res, data: { links } });
+  } catch (error) {
+    return failureResponse({ res });
+  }
+};
+export const getAllLinksActiveByUsername = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const { username } = req.params;
+  try {
+    const isFoundUser = await UserModel.findOne({ username });
+    if (!isFoundUser) {
+      return failureResponse({
+        res,
+        status: 404,
+        message: "USER_NOT_FOUNT",
+      });
+    }
+    const links =
+      (await LinkModel.find({ user: isFoundUser._id, actived: true })) || [];
 
     return successResponse({ res, data: { links } });
   } catch (error) {

@@ -1,11 +1,13 @@
 import {
   DocumentType,
+  Ref,
   getModelForClass,
   pre,
   prop,
 } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import bcrypt from "bcrypt";
+import { Style } from "./style.model";
 
 @pre<User>("save", async function (next) {
   this.fullName = this.firstName + " " + this.lastName;
@@ -18,16 +20,16 @@ export class User extends TimeStamps {
   @prop({ type: String })
   public fullName?: string;
 
-  @prop({ require: true, unique: true, type: String })
+  @prop({ required: true, unique: true, type: String })
   public username!: string;
 
-  @prop({ require: true, type: String })
+  @prop({ required: true, type: String })
   public firstName!: string;
 
-  @prop({ require: true, type: String })
+  @prop({ required: true, type: String })
   public lastName!: string;
 
-  @prop({ require: true, unique: true, type: String })
+  @prop({ required: true, unique: true, type: String })
   public email!: string;
 
   @prop({ type: String })
@@ -47,6 +49,9 @@ export class User extends TimeStamps {
 
   @prop({ type: String })
   public pictureUrl?: string;
+
+  @prop({ required: true, ref: () => Style })
+  public style!: Ref<Style>;
 
   public async isMatchPassword(
     this: DocumentType<User>,

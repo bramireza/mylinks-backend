@@ -8,13 +8,7 @@ export const getAllUsers = async (
 ): Promise<Response> => {
   try {
     const users = await UserModel.find();
-    return successResponse({
-      res,
-      data: {
-        message: "SUCCESSFUL_SIGNIN",
-        users,
-      },
-    });
+    return successResponse({ res, data: { users } });
   } catch (error) {
     return failureResponse({ res });
   }
@@ -24,11 +18,11 @@ export const getOneUser = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
+  const { id } = req.params;
   try {
-    const _id = req.params.id;
-    const user = await UserModel.findById(_id);
+    const user = await UserModel.findById(id);
     if (!user) {
-      return failureResponse({ res, status: 400, message: "USER_NOT_FOUND" });
+      return failureResponse({ res, status: 404, message: "USER_NOT_FOUND" });
     }
 
     return successResponse({ res, data: { user } });

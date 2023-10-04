@@ -6,10 +6,10 @@ export class Link extends TimeStamps {
   @prop({ require: true, type: String })
   public name!: string;
 
-  @prop({ require: true, type: String })
+  @prop({ required: true, type: String })
   public url!: string;
 
-  @prop({ require: true, ref: () => User })
+  @prop({ required: true, ref: () => User })
   public user!: Ref<User>;
 
   @prop({ type: Boolean, default: false })
