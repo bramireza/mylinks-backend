@@ -11,7 +11,7 @@ const app: express.Application = express();
 app.use(morgan("dev"));
 app.use(
   cors({
-    origin: [config.FRONT_URL], // Lista de orígenes permitidos
+    origin: [config.FRONT_URL, "*"], // Lista de orígenes permitidos
     credentials: true,
   })
 );

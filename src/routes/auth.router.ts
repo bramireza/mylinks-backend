@@ -14,5 +14,7 @@ authRouter.post(
 );
 authRouter.get("/me", isAuthenticated, authController.me);
 authRouter.post("/logout", authController.logout);
+authRouter.post("/google", authController.googleLogin);
+
 
 export default authRouter;

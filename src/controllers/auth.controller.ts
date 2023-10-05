@@ -4,16 +4,86 @@ import {
   User,
   UserModel,
   BlackListTokenModel,
+  ProviderType,
 } from "../models";
-import { validatePassword } from "../helpers";
+import { generateRandomUsername, validatePassword } from "../helpers";
 import {
   createTokens,
   failureResponse,
   successResponse,
   verifyToken,
   getTokenInHeaders,
+  oAuth2Client,
 } from "../utils";
+import { config } from "../configs";
 
+export const googleLogin = async (req: Request, res: Response) => {
+  try {
+    const { tokens } = await oAuth2Client.getToken(req.body.code);
+    const ticket = await oAuth2Client.verifyIdToken({
+      idToken: tokens.id_token!,
+      audience: config.GOOGLE.CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    if (!payload) {
+      return failureResponse({
+        res,
+        status: 403,
+        message: "GOOGLE_ACOUNT_NOT_VERIFIED",
+      });
+    }
+    const { email, picture, name, given_name, family_name } = payload;
+    const updatedUser = await UserModel.findOneAndUpdate(
+      { email },
+      {
+        pictureUrl: picture,
+        firtsName: given_name,
+        lastName: family_name,
+        fullName: name,
+        provider: ProviderType.Google,
+      },
+      { new: true }
+    );
+    if (!updatedUser) {
+      const newUser = new UserModel({
+        email,
+        pictureUrl: picture,
+        firstName: given_name,
+        lastName: family_name,
+        username: generateRandomUsername(given_name!),
+        provider: ProviderType.Google,
+      });
+      console.log(newUser);
+
+      const savedNewUser = await newUser.save();
+      
+      console.log(savedNewUser);
+      const { accessToken, refreshToken } = createTokens(savedNewUser);
+      await RefreshTokenModel.create({
+        token: refreshToken,
+        user: savedNewUser._id,
+      });
+      console.log(accessToken);
+
+      return successResponse({
+        res,
+        data: { user: savedNewUser, accessToken, refreshToken },
+      });
+    }
+    const { accessToken, refreshToken } = createTokens(updatedUser);
+    await RefreshTokenModel.create({
+      token: refreshToken,
+      user: updatedUser._id,
+    });
+
+    return successResponse({
+      res,
+      data: { user: updatedUser, accessToken, refreshToken },
+    });
+  } catch (error) {
+    return failureResponse({ res });
+  }
+};
 export const signIn = async (
   req: Request,
   res: Response
@@ -37,11 +107,11 @@ export const signIn = async (
         message: "INVALID_CREDENTIALS",
       });
     }
-    if (user.googleId && !user.password) {
+    if (!user.password) {
       return failureResponse({
         res,
         status: 403,
-        message: "INVALID_CREDENTIALS",
+        message: "INVALID_LOCAL_PROVIDER",
       });
     }
     const isMatch = await user.isMatchPassword(password);
@@ -83,8 +153,7 @@ export const signUp = async (
     const isFoundUser = await UserModel.findOne({
       $or: [{ email }, { username }],
     });
-
-    console.log(isFoundUser);
+    
     if (isFoundUser) {
       return failureResponse({
         res,
@@ -97,6 +166,7 @@ export const signUp = async (
 
     return successResponse({ res, data: { user: savedNewUser } });
   } catch (error) {
+    console.log(error);
     return failureResponse({ res });
   }
 };

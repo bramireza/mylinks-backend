@@ -9,6 +9,10 @@ import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import bcrypt from "bcrypt";
 import { Style } from "./style.model";
 
+export enum ProviderType {
+  Local = "Local",
+  Google = "Google",
+}
 @pre<User>("save", async function (next) {
   this.fullName = this.firstName + " " + this.lastName;
   if (this.password) {
@@ -45,13 +49,13 @@ export class User extends TimeStamps {
   public gender?: string;
 
   @prop({ type: String })
-  public googleId?: string;
-
-  @prop({ type: String })
   public pictureUrl?: string;
 
-  @prop({ required: true, ref: () => Style })
-  public style!: Ref<Style>;
+  @prop({ type: String, default: ProviderType.Local })
+  public provider?: ProviderType;
+
+  @prop({ ref: () => Style })
+  public style?: Ref<Style>;
 
   public async isMatchPassword(
     this: DocumentType<User>,
