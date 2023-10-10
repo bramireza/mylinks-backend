@@ -5,6 +5,8 @@ import { isAuthenticated } from "../middlewares";
 const userRouter: Router = Router();
 
 userRouter.get("/", isAuthenticated, userController.getAllUsers);
-userRouter.get("/:id", isAuthenticated, userController.getOneUser);
+userRouter.get("/:username", userController.getOneUserByUsername);
+userRouter.put("/:id", isAuthenticated, userController.updateUser);
+userRouter.delete("/:id", isAuthenticated, userController.deleteUser);
 
 export default userRouter;

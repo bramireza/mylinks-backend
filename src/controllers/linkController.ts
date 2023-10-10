@@ -1,18 +1,16 @@
 import { Request, Response } from "express";
 import { Link, LinkModel, UserModel } from "../models";
 import { failureResponse, successResponse } from "../utils";
+import { ERROR } from "../configs";
 
-export const createLink = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
+const createLink = async (req: Request, res: Response): Promise<Response> => {
   const { name, url, user }: Link = req.body;
   try {
     if (!name || !url || !user) {
       return failureResponse({
         res,
         status: 400,
-        message: "DATA_NOT_PROVIDER",
+        message: ERROR.DATA_NOT_PROVIDER,
       });
     }
     const newLink = new LinkModel(req.body);
@@ -23,46 +21,43 @@ export const createLink = async (
     return failureResponse({ res });
   }
 };
-
-export const updateLink = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
+const updateLink = async (req: Request, res: Response): Promise<Response> => {
   const { id } = req.params;
   try {
     const isFoundLink = await LinkModel.findById(id);
     if (!isFoundLink) {
-      return failureResponse({ res, status: 404, message: "LINK_NOT_FOUND" });
+      return failureResponse({
+        res,
+        status: 404,
+        message: ERROR.LINK_NOT_FOUND,
+      });
     }
-    const updatedLink = await LinkModel.findByIdAndUpdate(
-      { _id: id },
-      req.body,
-      { new: true }
-    );
+    const updatedLink = await isFoundLink.updateOne(req.body, { new: true });
 
     return successResponse({ res, data: { link: updatedLink } });
   } catch (error) {
     return failureResponse({ res });
   }
 };
-export const deleteLink = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
+const deleteLink = async (req: Request, res: Response): Promise<Response> => {
   const { id } = req.params;
   try {
     const isFoundLink = await LinkModel.findById(id);
     if (!isFoundLink) {
-      return failureResponse({ res, status: 404, message: "LINK_NOT_FOUND" });
+      return failureResponse({
+        res,
+        status: 404,
+        message: ERROR.LINK_NOT_FOUND,
+      });
     }
-    await LinkModel.findByIdAndDelete(id);
+    await isFoundLink.deleteOne();
 
-    return successResponse({ res, message: "LINK_DELETED_SUCCESFULLY" });
+    return successResponse({ res, message: "Link deleted succesfully" });
   } catch (error) {
     return failureResponse({ res });
   }
 };
-export const getAllLinksByUsername = async (
+const getAllLinksByUsername = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
@@ -73,17 +68,17 @@ export const getAllLinksByUsername = async (
       return failureResponse({
         res,
         status: 404,
-        message: "USER_NOT_FOUNT",
+        message: ERROR.USER_NOT_FOUND,
       });
     }
     const links = (await LinkModel.find({ user: isFoundUser._id })) || [];
-    console.log(links);
+
     return successResponse({ res, data: { links } });
   } catch (error) {
     return failureResponse({ res });
   }
 };
-export const getAllLinksActiveByUsername = async (
+const getAllLinksActiveByUsername = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
@@ -94,7 +89,7 @@ export const getAllLinksActiveByUsername = async (
       return failureResponse({
         res,
         status: 404,
-        message: "USER_NOT_FOUNT",
+        message: ERROR.USER_NOT_FOUND,
       });
     }
     const links =
@@ -104,4 +99,12 @@ export const getAllLinksActiveByUsername = async (
   } catch (error) {
     return failureResponse({ res });
   }
+};
+
+export default {
+  createLink,
+  updateLink,
+  deleteLink,
+  getAllLinksActiveByUsername,
+  getAllLinksByUsername,
 };

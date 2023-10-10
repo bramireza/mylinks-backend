@@ -4,7 +4,7 @@ import {
   getModelForClass,
   prop,
 } from "@typegoose/typegoose";
-import { User } from "./user.model";
+import { User } from "./user";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 
 export class RefreshToken extends TimeStamps {

@@ -6,7 +6,7 @@ import {
   BlackListTokenModel,
   ProviderType,
 } from "../models";
-import { generateRandomUsername, validatePassword } from "../helpers";
+import { validatePassword } from "../helpers";
 import {
   createTokens,
   failureResponse,
@@ -15,21 +15,21 @@ import {
   getTokenInHeaders,
   oAuth2Client,
 } from "../utils";
-import { config } from "../configs";
+import { ERROR, GOOGLE } from "../configs";
 
-export const googleLogin = async (req: Request, res: Response) => {
+const googleLogin = async (req: Request, res: Response) => {
   try {
     const { tokens } = await oAuth2Client.getToken(req.body.code);
     const ticket = await oAuth2Client.verifyIdToken({
       idToken: tokens.id_token!,
-      audience: config.GOOGLE.CLIENT_ID,
+      audience: GOOGLE.CLIENT_ID,
     });
     const payload = ticket.getPayload();
     if (!payload) {
       return failureResponse({
         res,
         status: 403,
-        message: "GOOGLE_ACOUNT_NOT_VERIFIED",
+        message: ERROR.GOOGLE_ACOUNT_NOT_VERIFIED,
       });
     }
     const { email, picture, name, given_name, family_name } = payload;
@@ -50,20 +50,15 @@ export const googleLogin = async (req: Request, res: Response) => {
         pictureUrl: picture,
         firstName: given_name,
         lastName: family_name,
-        username: generateRandomUsername(given_name!),
         provider: ProviderType.Google,
       });
-      console.log(newUser);
-
       const savedNewUser = await newUser.save();
-      
-      console.log(savedNewUser);
+
       const { accessToken, refreshToken } = createTokens(savedNewUser);
       await RefreshTokenModel.create({
         token: refreshToken,
         user: savedNewUser._id,
       });
-      console.log(accessToken);
 
       return successResponse({
         res,
@@ -84,7 +79,7 @@ export const googleLogin = async (req: Request, res: Response) => {
     return failureResponse({ res });
   }
 };
-export const signIn = async (
+const signIn = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
@@ -95,7 +90,7 @@ export const signIn = async (
       return failureResponse({
         res,
         status: 400,
-        message: "DATA_NOT_PROVIDER",
+        message: ERROR.DATA_NOT_PROVIDER,
       });
     }
     const user = await UserModel.findOne({ email });
@@ -104,14 +99,14 @@ export const signIn = async (
       return failureResponse({
         res,
         status: 403,
-        message: "INVALID_CREDENTIALS",
+        message: ERROR.INVALID_CREDENTIALS,
       });
     }
     if (!user.password) {
       return failureResponse({
         res,
         status: 403,
-        message: "INVALID_LOCAL_PROVIDER",
+        message: ERROR.INVALID_LOCAL_PROVIDER,
       });
     }
     const isMatch = await user.isMatchPassword(password);
@@ -119,7 +114,7 @@ export const signIn = async (
       return failureResponse({
         res,
         status: 403,
-        message: "INVALID_CREDENTIALS",
+        message: ERROR.INVALID_CREDENTIALS,
       });
     }
     const { accessToken, refreshToken } = createTokens(user);
@@ -130,7 +125,7 @@ export const signIn = async (
     return failureResponse({ res });
   }
 };
-export const signUp = async (
+const signUp = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
@@ -140,14 +135,14 @@ export const signUp = async (
       return failureResponse({
         res,
         status: 400,
-        message: "DATA_NOT_PROVIDER",
+        message: ERROR.DATA_NOT_PROVIDER,
       });
     }
     if (!validatePassword(password)) {
       return failureResponse({
         res,
         status: 400,
-        message: "PASSWORD_NOT_FORMAT_VALID",
+        message: ERROR.PASSWORD_NOT_FORMAT_VALID,
       });
     }
     const isFoundUser = await UserModel.findOne({
@@ -158,7 +153,7 @@ export const signUp = async (
       return failureResponse({
         res,
         status: 400,
-        message: "USER_ALREADY_EXIST",
+        message: ERROR.USER_ALREADY_EXIST,
       });
     }
     const newUser = new UserModel(req.body);
@@ -171,7 +166,7 @@ export const signUp = async (
   }
 };
 
-export const refreshToken = async (
+const refreshToken = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
@@ -181,7 +176,7 @@ export const refreshToken = async (
       return failureResponse({
         res,
         status: 400,
-        message: "MISSING_REFRESH_TOKEN",
+        message: ERROR.MISSING_REFRESH_TOKEN,
       });
     }
 
@@ -189,12 +184,12 @@ export const refreshToken = async (
       refreshToken
     );
     if (!savedRefreshToken || savedRefreshToken.revoked === true) {
-      return failureResponse({ res, status: 401, message: "UNAUTHORIZED" });
+      return failureResponse({ res, status: 401, message: ERROR.UNAUTHORIZED });
     }
 
     const user = await UserModel.findOne({ _id: savedRefreshToken.user._id });
     if (!user) {
-      return failureResponse({ res, status: 401, message: "UNAUTHORIZED" });
+      return failureResponse({ res, status: 401, message: ERROR.UNAUTHORIZED });
     }
 
     await RefreshTokenModel.revokeTokenById(savedRefreshToken.id);
@@ -210,7 +205,7 @@ export const refreshToken = async (
   }
 };
 
-export const revokeRefreshTokens = async (
+const revokeRefreshTokens = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
@@ -220,7 +215,7 @@ export const revokeRefreshTokens = async (
       return failureResponse({
         res,
         status: 400,
-        message: "USER_ID_MISSING_OR_INVALID",
+        message: ERROR.MISSING_USER_ID,
       });
     }
     await RefreshTokenModel.revokeAllTokensByUserId(userId);
@@ -234,14 +229,14 @@ export const revokeRefreshTokens = async (
   }
 };
 
-export const me = async (req: Request, res: Response): Promise<Response> => {
+const me = async (req: Request, res: Response): Promise<Response> => {
   try {
     const accessToken = getTokenInHeaders(req);
     if (!accessToken) {
       return failureResponse({
         res,
         status: 401,
-        message: "TOKEN_MISING_OR_INVALID",
+        message: ERROR.TOKEN_MISING_OR_INVALID,
       });
     }
     const decodedToken = await verifyToken(accessToken, false);
@@ -252,7 +247,7 @@ export const me = async (req: Request, res: Response): Promise<Response> => {
   }
 };
 
-export const logout = async (
+const logout = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
@@ -273,4 +268,14 @@ export const logout = async (
   } catch (error) {
     return failureResponse({ res });
   }
+};
+
+export default {
+  googleLogin,
+  signIn,
+  signUp,
+  me,
+  revokeRefreshTokens,
+  refreshToken,
+  logout,
 };

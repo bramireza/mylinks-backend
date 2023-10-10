@@ -1,4 +1,4 @@
-import { User } from "./user.model";
+import { User } from "./user";
 import { Ref, getModelForClass, prop } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 

@@ -3,15 +3,15 @@ import morgan from "morgan";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { routes } from "./routes";
-import { config } from "./configs";
 import { failureResponse } from "./utils";
+import { FRONT_URL } from "./configs";
 
 const app: express.Application = express();
 
 app.use(morgan("dev"));
 app.use(
   cors({
-    origin: [config.FRONT_URL, "*"], // Lista de orígenes permitidos
+    origin: [FRONT_URL, "*"], // Lista de orígenes permitidos
     credentials: true,
   })
 );

@@ -1,4 +1,5 @@
 import { Response } from "express";
+import { ERROR } from "../configs";
 
 interface IResponse {
   res: Response;
@@ -24,7 +25,7 @@ export function successResponse({
 export function failureResponse({
   res,
   status = 500,
-  message = "INTERNAL_SERVER_ERROR",
+  message = ERROR.INTERNAL_SERVER_ERROR,
 }: IResponse): Response {
   return res.status(status).json({ success: false, message });
 }

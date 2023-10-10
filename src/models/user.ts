@@ -7,7 +7,8 @@ import {
 } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 import bcrypt from "bcrypt";
-import { Style } from "./style.model";
+import { Style } from "./style";
+import { generateRandomUsername } from "../helpers";
 
 export enum ProviderType {
   Local = "Local",
@@ -17,6 +18,12 @@ export enum ProviderType {
   this.fullName = this.firstName + " " + this.lastName;
   if (this.password) {
     this.password = await bcrypt.hash(this.password, 10);
+  }
+  if (!this.username) {
+    this.username = generateRandomUsername(this.firstName);
+  }
+  if (!this.pictureUrl) {
+    this.pictureUrl = `https://ui-avatars.com/api/?name=${this.username}&bold=true&length=1&font-size=0.35&color=000000&background=ffffff`;
   }
   next();
 })

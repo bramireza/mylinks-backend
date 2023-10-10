@@ -1,10 +1,9 @@
 import jwt from "jsonwebtoken";
-import { config } from "../configs";
-import { User } from "../models";
-import { DocumentType, mongoose } from "@typegoose/typegoose";
 import { Request } from "express";
+import { DocumentType, mongoose } from "@typegoose/typegoose";
+import { User } from "../models";
+import { JWT } from "../configs";
 
-const { JWT } = config;
 interface IToken {
   _id: mongoose.Types.ObjectId;
   name: string;
