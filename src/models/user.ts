@@ -14,6 +14,13 @@ export enum ProviderType {
   Local = "Local",
   Google = "Google",
 }
+class Image {
+  @prop({ type: String })
+  public secure_url!: string;
+
+  @prop({ type: String })
+  public public_id?: string;
+}
 @pre<User>("save", async function (next) {
   this.fullName = this.firstName + " " + this.lastName;
   if (this.password) {
@@ -22,8 +29,9 @@ export enum ProviderType {
   if (!this.username) {
     this.username = generateRandomUsername(this.firstName);
   }
-  if (!this.pictureUrl) {
-    this.pictureUrl = `https://ui-avatars.com/api/?name=${this.username}&bold=true&length=1&font-size=0.35&color=000000&background=ffffff`;
+  if (!this.avatar || !this.avatar.secure_url) {
+    this.avatar = this.avatar || {};
+    this.avatar.secure_url = `https://ui-avatars.com/api/?name=${this.username}&bold=true&length=1&font-size=0.35&color=000000&background=ffffff`;
   }
   next();
 })
@@ -31,16 +39,16 @@ export class User extends TimeStamps {
   @prop({ type: String })
   public fullName?: string;
 
-  @prop({ required: true, unique: true, type: String })
+  @prop({ type: String, unique: true })
   public username!: string;
 
-  @prop({ required: true, type: String })
+  @prop({ type: String })
   public firstName!: string;
 
-  @prop({ required: true, type: String })
+  @prop({ type: String })
   public lastName!: string;
 
-  @prop({ required: true, unique: true, type: String })
+  @prop({ type: String, unique: true })
   public email!: string;
 
   @prop({ type: String })
@@ -55,11 +63,11 @@ export class User extends TimeStamps {
   @prop({ type: String })
   public gender?: string;
 
-  @prop({ type: String })
-  public pictureUrl?: string;
+  @prop({type: () => Image})
+  public avatar!: Image;
 
   @prop({ type: String, default: ProviderType.Local })
-  public provider?: ProviderType;
+  public provider!: ProviderType;
 
   @prop({ ref: () => Style })
   public style?: Ref<Style>;

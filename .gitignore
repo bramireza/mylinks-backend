@@ -3,4 +3,5 @@ dist/
 package-lock.json
 npm-debug.log
 .env
-
+temp_images/*
+!temp_images

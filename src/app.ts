@@ -4,19 +4,19 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { routes } from "./routes";
 import { failureResponse } from "./utils";
-import { FRONT_URL } from "./configs";
+import { allowOrigins } from "./configs";
 
 const app: express.Application = express();
 
 app.use(morgan("dev"));
 app.use(
   cors({
-    origin: [FRONT_URL, "*"], // Lista de orígenes permitidos
+    origin: allowOrigins(),
     credentials: true,
   })
 );
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 // Routes middleware
 routes(app);

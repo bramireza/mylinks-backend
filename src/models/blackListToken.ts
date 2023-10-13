@@ -1,12 +1,11 @@
 import { prop, getModelForClass, index } from "@typegoose/typegoose";
+import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
+import { JWT } from "../configs";
 
-@index({ createdAt: 1 }, { expireAfterSeconds: 86400 })
-class BlackListToken {
-  @prop({ required: true, index: true, unique: true, type: String })
+@index({ createdAt: 1 }, { expires: JWT.ACCESS_TOKEN.EXP })
+class BlackListToken extends TimeStamps {
+  @prop({ type: String })
   public token!: string;
-
-  @prop({ required: true, default: Date.now, type: Date })
-  public createdAt!: Date;
 }
 
 export const BlackListTokenModel = getModelForClass(BlackListToken);

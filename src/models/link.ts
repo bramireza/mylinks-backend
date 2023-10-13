@@ -3,13 +3,13 @@ import { Ref, getModelForClass, prop } from "@typegoose/typegoose";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
 
 export class Link extends TimeStamps {
-  @prop({ require: true, type: String })
+  @prop({ type: String })
   public name!: string;
 
-  @prop({ required: true, type: String })
+  @prop({ type: String })
   public url!: string;
 
-  @prop({ required: true, ref: () => User })
+  @prop({ ref: () => User })
   public user!: Ref<User>;
 
   @prop({ type: Boolean, default: false })

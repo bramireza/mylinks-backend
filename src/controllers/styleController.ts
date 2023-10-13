@@ -43,7 +43,11 @@ export const updateStyle = async (
         message: ERROR.STYLE_NOT_FOUND,
       });
     }
-    const updatedStyle = await isFoundStyle.updateOne(req.body, { new: true });
+    const updatedStyle = await StyleModel.findByIdAndUpdate(
+      isFoundStyle._id,
+      req.body,
+      { new: true }
+    );
 
     return successResponse({ res, data: { style: updatedStyle } });
   } catch (error) {
@@ -58,7 +62,11 @@ export const deleteStyle = async (
   try {
     const isFoundStyle = await StyleModel.findById(id);
     if (!isFoundStyle) {
-      return failureResponse({ res, status: 404, message: ERROR.STYLE_NOT_FOUND });
+      return failureResponse({
+        res,
+        status: 404,
+        message: ERROR.STYLE_NOT_FOUND,
+      });
     }
     await isFoundStyle.deleteOne();
 

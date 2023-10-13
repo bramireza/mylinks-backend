@@ -1,7 +1,14 @@
 import { Request, Response } from "express";
-import { UserModel } from "../models";
-import { failureResponse, successResponse } from "../utils";
+import fs from "fs-extra";
+import { LinkModel, UserModel } from "../models";
+import {
+  deleteImage,
+  failureResponse,
+  successResponse,
+  uploadImage,
+} from "../utils";
 import { ERROR } from "../configs";
+import fileUpload from "express-fileupload";
 
 export const getAllUsers = async (
   _req: Request,
@@ -50,10 +57,26 @@ export const updateUser = async (
         message: ERROR.USER_NOT_FOUND,
       });
     }
-    const updatedUser = await isFoundUser.updateOne(req.body, { new: true });
+    if (req.files?.avatar) {
+      const imagesUploaded = await uploadImage(req.files.avatar.tempFilePath);
+      console.log(imagesUploaded);
+      req.body.avatar = {
+        public_id: imagesUploaded.public_id,
+        secure_url: imagesUploaded.secure_url,
+      };
+      await fs.unlink(req.files.avatar.tempFilePath);
+    }
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      isFoundUser._id,
+      req.body,
+      { new: true }
+    );
 
     return successResponse({ res, data: { user: updatedUser } });
   } catch (error) {
+    if (req.files?.avatar) {
+      await fs.unlink(req.files.avatar.tempFilePath);
+    }
     return failureResponse({ res });
   }
 };
@@ -71,9 +94,17 @@ export const deleteUser = async (
         message: ERROR.USER_NOT_FOUND,
       });
     }
+    if (isFoundUser.avatar.public_id) {
+      await deleteImage(isFoundUser.avatar.public_id);
+    }
+    const hasLinks = await LinkModel.find({ user: isFoundUser._id });
+
+    if (hasLinks) {
+      await LinkModel.deleteMany({ user: isFoundUser._id });
+    }
     await isFoundUser.deleteOne();
 
-    return successResponse({ res, message: "Style deleted succesfully" });
+    return successResponse({ res, message: "User deleted succesfully" });
   } catch (error) {
     return failureResponse({ res });
   }

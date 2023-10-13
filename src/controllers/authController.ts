@@ -36,7 +36,9 @@ const googleLogin = async (req: Request, res: Response) => {
     const updatedUser = await UserModel.findOneAndUpdate(
       { email },
       {
-        pictureUrl: picture,
+        avatar: {
+          secure_url: picture,
+        },
         firtsName: given_name,
         lastName: family_name,
         fullName: name,
@@ -47,7 +49,9 @@ const googleLogin = async (req: Request, res: Response) => {
     if (!updatedUser) {
       const newUser = new UserModel({
         email,
-        pictureUrl: picture,
+        avatar: {
+          secure_url: picture,
+        },
         firstName: given_name,
         lastName: family_name,
         provider: ProviderType.Google,

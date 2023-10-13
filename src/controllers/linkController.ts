@@ -32,7 +32,11 @@ const updateLink = async (req: Request, res: Response): Promise<Response> => {
         message: ERROR.LINK_NOT_FOUND,
       });
     }
-    const updatedLink = await isFoundLink.updateOne(req.body, { new: true });
+    const updatedLink = await LinkModel.findByIdAndUpdate(
+      isFoundLink._id,
+      req.body,
+      { new: true }
+    );
 
     return successResponse({ res, data: { link: updatedLink } });
   } catch (error) {

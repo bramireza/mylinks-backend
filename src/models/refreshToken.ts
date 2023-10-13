@@ -3,15 +3,18 @@ import {
   DocumentType,
   getModelForClass,
   prop,
+  index,
 } from "@typegoose/typegoose";
-import { User } from "./user";
 import { TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
+import { User } from "./user";
+import { JWT } from "../configs";
 
+@index({ createdAt: 1 }, { expires: JWT.REFRESH_TOKEN.EXP })
 export class RefreshToken extends TimeStamps {
-  @prop({ required: true, ref: () => User })
+  @prop({ ref: () => User })
   public user!: Ref<User>;
 
-  @prop({ required: true, type: String })
+  @prop({ type: String })
   public token!: string;
 
   @prop({ type: Boolean, default: false })
