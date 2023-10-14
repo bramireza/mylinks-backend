@@ -4,11 +4,11 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { routes } from "./routes";
 import { failureResponse } from "./utils";
-import { allowOrigins } from "./configs";
+import { MORGAN_FORMAT, allowOrigins } from "./configs";
 
 const app: express.Application = express();
 
-app.use(morgan("dev"));
+app.use(morgan(MORGAN_FORMAT));
 app.use(
   cors({
     origin: allowOrigins(),

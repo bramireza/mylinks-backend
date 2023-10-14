@@ -5,6 +5,7 @@ dotenv.config();
 export const NODE_ENV = process.env.NODE_ENV || "development";
 export const PORT = process.env.PORT || "8000";
 export const DB_MONGO_URI = process.env.DB_MONGO_URI!;
+export const MORGAN_FORMAT = NODE_ENV === "production" ? "common" : "dev";
 
 export const JWT = {
   ACCESS_TOKEN: {
@@ -27,8 +28,7 @@ export const CLOUDINARY = {
   API_KEY: process.env.CLOUDINARY_API_KEY,
   API_SECRET: process.env.CLOUDINARY_API_SECRET,
 };
-export const PATH_TEMP_IMAGES =
-  process.env.PATH_TEMP_IMAGES || "temp_images";
+export const PATH_TEMP_IMAGES = process.env.PATH_TEMP_IMAGES || "temp_images";
 export const PATH_CLOUDINARY_IMAGES =
   process.env.PATH_CLOUDINARY_IMAGES || "images";
 
