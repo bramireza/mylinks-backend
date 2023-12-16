@@ -35,9 +35,21 @@ class Image {
   }
   next();
 })
+@pre<User>(["updateOne", "findOneAndUpdate"], function (next) {
+  const document = this.getUpdate() as User;
+  if (document) {
+    this.setUpdate({
+      $set: {
+        ...document,
+        fullName: document.firstName + " " + document.lastName
+      }
+    });
+  }
+  next();
+})
 export class User extends TimeStamps {
   @prop({ type: String })
-  public fullName?: string;
+  public fullName!: string;
 
   @prop({ type: String, unique: true })
   public username!: string;
@@ -63,7 +75,7 @@ export class User extends TimeStamps {
   @prop({ type: String })
   public gender?: string;
 
-  @prop({type: () => Image})
+  @prop({ type: () => Image })
   public avatar!: Image;
 
   @prop({ type: String, default: ProviderType.Local })

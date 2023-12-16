@@ -8,7 +8,6 @@ import {
   uploadImage,
 } from "../utils";
 import { ERROR } from "../configs";
-import fileUpload from "express-fileupload";
 
 export const getAllUsers = async (
   _req: Request,
@@ -28,7 +27,7 @@ export const getOneUserByUsername = async (
   const { username } = req.params;
   try {
     const user = await UserModel.findOne({ username })
-      .select("username pictureUrl")
+      .select("username avatar")
       .populate("style");
     if (!user) {
       return failureResponse({
@@ -59,7 +58,6 @@ export const updateUser = async (
     }
     if (req.files?.avatar) {
       const imagesUploaded = await uploadImage(req.files.avatar.tempFilePath);
-      console.log(imagesUploaded);
       req.body.avatar = {
         public_id: imagesUploaded.public_id,
         secure_url: imagesUploaded.secure_url,

@@ -16,6 +16,7 @@ import {
   oAuth2Client,
 } from "../utils";
 import { ERROR, GOOGLE } from "../configs";
+import { updateUser } from "./userController";
 
 const googleLogin = async (req: Request, res: Response) => {
   try {
